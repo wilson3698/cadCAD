@@ -1,4 +1,6 @@
-from ui.config import state_dict, mechanisms, exogenous_states, env_processes, sim_config
+#from ui.config import state_dict, mechanisms, exogenous_states, env_processes, sim_config
+from ui.toyConfig import state_dict, mechanisms, exogenous_states, env_processes, sim_config
+#from ui.<config_filename> import state_dict, mechanisms, exogenous_states, env_processes, sim_config
 from engine.configProcessor import generate_config
 from engine.mechanismExecutor import simulation
 from engine.utils import flatten
@@ -11,7 +13,8 @@ def main():
     configs = generate_config(mechanisms, exogenous_states)
     # p = pipeline(states_list, configs, env_processes, range(10))
     N = sim_config['N']
-    r = range(5)
+    r = range(sim_config["R"])
+    #r = range(5)
     # Dimensions: N x r x mechs
     s = simulation(states_list, configs, env_processes, r, N)
     result = pd.DataFrame(flatten(s))
