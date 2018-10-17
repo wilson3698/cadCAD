@@ -12,36 +12,35 @@ seed = {
 
 # Behaviors per Mechanism
 def b1m1(step, sL, s):
-    return s['s1'] + 1
+    return s['s1']
 def b2m1(step, sL, s):
-    return s['s1'] + 1
+    return s['s2']-s['s1']
 
 def b1m2(step, sL, s):
-    return s['s1'] + 1
+    return s['s1']-s['s2']
 def b2m2(step, sL, s):
-    return s['s1'] + 1
+    return s['s2']
 
 def b1m3(step, sL, s):
-    return s['s1'] + 1
+    return s['s1']
 def b2m3(step, sL, s):
-    return s['s2'] + 1
+    return s['s2']
 
 
 # Internal States per Mechanism
 def s1m1(step, sL, s, _input):
-    s['s1'] = s['s1'] + _input
+    s['s1'] = (s['s1']-Decimal('0.5')*_input)/(s['s1']+s['s2']+s['s3']+s['s4'])**2
 def s2m1(step, sL, s, _input):
-    s['s2'] = s['s2'] + _input
-
+    s['s2'] = (s['s2']-Decimal('0.5')*_input)/(s['s2']+s['s1']+s['s3']+s['s4'])**2
 def s1m2(step, sL, s, _input):
-    s['s1'] = s['s1'] + _input
+    s['s1'] = s['s3']*(_input*s['s1']/s['s2']+Decimal('1.0')) 
 def s2m2(step, sL, s, _input):
-    s['s2'] = s['s2'] + _input
+    s['s2'] = s['s4']*(s['s2']/s['s1']+Decimal('1.0'))
 
 def s1m3(step, sL, s, _input):
-    s['s1'] = s['s1'] + _input
+    s['s1'] = s['s1']+Decimal(.25)*(s['s2']-s['s1']) + Decimal(.25)*(_input-s['s1'])
 def s2m3(step, sL, s, _input):
-    s['s2'] = s['s2'] + _input
+    s['s2'] = s['s2']+Decimal(.25)*(s['s1']-s['s2']) + Decimal(.25)*(_input-s['s2'])
 
 # Exogenous States
 proc_one_coef_A = 0.7
@@ -55,16 +54,16 @@ def es5p2(step, sL, s, _input): # accept timedelta instead of timedelta params
 
 # Environment States
 def env_a(x):
-    return 10
+    return 3
 def env_b(x):
-    return 10
+    return 7
 # def what_ever(x):
 #     return x + 1
 
 # Genesis States
 state_dict = {
-    's1': Decimal(0.0),
-    's2': Decimal(0.0),
+    's1': Decimal(5.0),
+    's2': Decimal(10.0),
     's3': Decimal(1.0),
     's4': Decimal(1.0),
     'timestamp': '2018-10-01 15:16:24'
