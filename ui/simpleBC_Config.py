@@ -103,12 +103,12 @@ proc_one_coef_A = -delta
 proc_one_coef_B = delta
 def es3p1(step, sL, s, _input):
     rv = bound_norm_random(seed['a'], proc_one_coef_A, proc_one_coef_B)
-    s['Price'] = theta*s['Price'] * (Decimal('1')+rv) +(Decimal('1')-theta)*s['Pool']/s['Supply'] 
+    return ('Price', theta*s['Price'] * (Decimal('1')+rv) +(Decimal('1')-theta)*s['Pool']/s['Supply'] )
 def es4p2(step, sL, s, _input):
-    s['Belief'] = alpha*s['Belief']+s['Pool']/s['Supply']*(Decimal('1')-alpha)
+    return ('Belief', alpha*s['Belief']+s['Pool']/s['Supply']*(Decimal('1')-alpha))
 
 def es5p2(step, sL, s, _input): # accept timedelta instead of timedelta params
-    s['timestamp'] = ep_time_step(s, s['timestamp'], seconds=1)
+    return ('timestamp', ep_time_step(s, s['timestamp'], seconds=1))
 
 # Environment States
 #from numpy.random import randn as rn

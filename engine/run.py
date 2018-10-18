@@ -1,4 +1,4 @@
-from ui.config import state_dict, mechanisms, exogenous_states, env_processes, sim_config
+from ui.configBC_Config import state_dict, mechanisms, exogenous_states, env_processes, sim_config
 from engine.configProcessor import generate_config
 from engine.mechanismExecutor import simulation
 from engine.utils import flatten
