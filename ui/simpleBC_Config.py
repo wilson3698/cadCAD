@@ -25,7 +25,7 @@ def b1m1(step, sL, s):
     if s['Price']< s['Pool']/s['Supply']-gamma:
         #print('arbit bond')
         #print((s['Pool']/s['Supply']-s['Price'])/s['Price']*s['Pool']*beta)
-        return  (s['Pool']/s['Supply']-s['Price'])/s['Price']*s['Pool']*beta
+        return  s['Pool']*(s['Pool']/s['Supply']-s['Price'])/s['Price']*beta
     else :
         return 0
     
@@ -46,7 +46,7 @@ def b1m2(step, sL, s):
     if Decimal('1')/s['Price']< s['Supply']/s['Pool']-gamma:
         #print('arbit burn')
         #print((s['Supply']/s['Pool']-Decimal('1')/s['Price'])*s['Price']*s['Supply']*beta)
-        return  s['Price']*(s['Supply']/s['Pool']-Decimal('1')/s['Price'])*s['Supply']*beta
+        return  s['Supply']*s['Price']*(s['Supply']/s['Pool']-Decimal('1')/s['Price'])*beta
     else :
         return 0
 
@@ -104,8 +104,10 @@ proc_one_coef_B = delta
 def es3p1(step, sL, s, _input):
     rv = bound_norm_random(seed['a'], proc_one_coef_A, proc_one_coef_B)
     return ('Price', theta*s['Price'] * (Decimal('1')+rv) +(Decimal('1')-theta)*s['Pool']/s['Supply'] )
+
 def es4p2(step, sL, s, _input):
-    return ('Belief', alpha*s['Belief']+s['Pool']/s['Supply']*(Decimal('1')-alpha))
+    rv = bound_norm_random(seed['b'], proc_one_coef_A, proc_one_coef_B)
+    return ('Belief', alpha*s['Belief']*(Decimal('1')+rv )+(Decimal('1')-alpha)*s['Pool']/s['Supply'])
 
 def es5p2(step, sL, s, _input): # accept timedelta instead of timedelta params
     return ('timestamp', ep_time_step(s, s['timestamp'], seconds=1))
