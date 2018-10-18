@@ -83,7 +83,7 @@ env_processes = {
 # test return vs. non-return functions as lambdas
 # test fully defined functions
 mechanisms = {
-    "m1": {
+    "mech1": {
         "behaviors": {
             "b1": b1m1, # lambda step, sL, s: s['s1'] + 1,
             "b2": b2m1
