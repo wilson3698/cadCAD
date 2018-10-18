@@ -36,7 +36,7 @@ def b2m1(step, sL, s):
     if s['Price']< s['Belief']:
         #print('invest bond')
         #print((s['Belief']-s['Price'])/s['Price']*s['Pool']*beta)
-        return  (s['Belief']-s['Price'])/s['Price']*s['Pool']*beta
+        return  s['Pool']*(s['Belief']-s['Price'])/s['Price']*beta
     else :
         return 0
 
@@ -46,7 +46,7 @@ def b1m2(step, sL, s):
     if Decimal('1')/s['Price']< s['Supply']/s['Pool']-gamma:
         #print('arbit burn')
         #print((s['Supply']/s['Pool']-Decimal('1')/s['Price'])*s['Price']*s['Supply']*beta)
-        return  (s['Supply']/s['Pool']-Decimal('1')/s['Price'])*s['Price']*s['Supply']*beta
+        return  s['Price']*(s['Supply']/s['Pool']-Decimal('1')/s['Price'])*s['Supply']*beta
     else :
         return 0
 

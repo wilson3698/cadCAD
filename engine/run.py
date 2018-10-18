@@ -11,7 +11,7 @@ def main():
     configs = generate_config(mechanisms, exogenous_states)
     # p = pipeline(states_list, configs, env_processes, range(10))
     N = sim_config['N']
-    r = range(5)
+    r = range(sim_config["R"])
     # Dimensions: N x r x mechs
     s = simulation(states_list, configs, env_processes, r, N)
     result = pd.DataFrame(flatten(s))
