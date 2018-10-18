@@ -3,7 +3,7 @@ from engine.utils import bound_norm_random, ep_time_step, env_proc
 import numpy as np
 from decimal import Decimal
 
-alpha = Decimal('.7') #forgetting param
+alpha = Decimal('.95') #forgetting param
 theta = Decimal('.75') #weight param for rational price
 beta = Decimal('0.5') #agant response gain
 gamma = Decimal('.03') #action friction param
@@ -126,7 +126,7 @@ state_dict = {
     'Pool': Decimal(10.0),
     'Supply': Decimal(5.0),
     'Price': Decimal(.01),
-    'Belief': Decimal(10.0),
+    'Belief': Decimal(3.0),
     'timestamp': '2018-10-01 15:16:24'
 }
 
