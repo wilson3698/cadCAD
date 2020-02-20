@@ -25,11 +25,12 @@ def single_proc_exec(
         configs_structs: List[ConfigsType],
         env_processes_list: List[EnvProcessesType],
         Ts: List[range],
-        Ns: List[int]
+        Ns: List[int],
+        time_seq_wrapper: Callable
     ):
     l = [simulation_execs, states_lists, configs_structs, env_processes_list, Ts, Ns]
     simulation_exec, states_list, config, env_processes, T, N = list(map(lambda x: x.pop(), l))
-    result = simulation_exec(var_dict_list, states_list, config, env_processes, T, N)
+    result = simulation_exec(var_dict_list, states_list, config, env_processes, T, N, time_seq_wrapper)
     return flatten(result)
 
 
@@ -40,23 +41,39 @@ def parallelize_simulations(
         configs_structs: List[ConfigsType],
         env_processes_list: List[EnvProcessesType],
         Ts: List[range],
-        Ns: List[int]
+        Ns: List[int],
+        time_seq_wrapper: Callable
     ):
-    l = list(zip(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns))
+    l = list(zip(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns, time_seq_wrapper))
     with PPool(len(configs_structs)) as p:
-        results = p.map(lambda t: t[0](t[1], t[2], t[3], t[4], t[5], t[6]), l)
+        results = p.map(lambda t: t[0](t[1], t[2], t[3], t[4], t[5], t[6], t[7]), l)
     return results
 
 
 class ExecutionContext:
-    def __init__(self, context: str = ExecutionMode.multi_proc) -> None:
+    def __init__(self, context: str = ExecutionMode.multi_proc, progress_bar_type: str = '') -> None:
         self.name = context
         self.method = None
+        self.progress_bar_type = None
 
         if context == 'single_proc':
             self.method = single_proc_exec
         elif context == 'multi_proc':
             self.method = parallelize_simulations
+        
+        if progress_bar_type == 'tqdm':
+            try:
+                from tqdm import tqdm
+                self.progress_bar_type = tqdm
+            except:
+                self.progress_bar_type = None
+        elif progress_bar_type == 'tqdm-notebook':
+            try:
+                from tqdm.notebook import tqdm
+                self.progress_bar_type = tqdm
+            except:
+                self.progress_bar_type = None
+            
 
 
 class Executor:
@@ -64,6 +81,7 @@ class Executor:
         self.SimExecutor = SimExecutor
         self.exec_method = exec_context.method
         self.exec_context = exec_context.name
+        self.exec_progress_bar = exec_context.progress_bar_type
         self.configs = configs
 
     def execute(self) -> Tuple[List[Dict[str, Any]], DataFrame]:
@@ -84,10 +102,15 @@ class Executor:
 
         var_dict_list, states_lists, Ts, Ns, eps, configs_structs, env_processes_list, partial_state_updates, simulation_execs = \
             [], [], [], [], [], [], [], [], []
+        time_seq_wrapper = []
         config_idx = 0
 
-        for x in self.configs:
-
+        config_iterator = self.configs
+        if self.exec_progress_bar is not None:
+            time_seq_wrapper_function = self.exec_progress_bar
+        else:
+            time_seq_wrapper_function = lambda x: x
+        for x in config_iterator:
             Ts.append(x.sim_config['T'])
             Ns.append(x.sim_config['N'])
             var_dict_list.append(x.sim_config['M'])
@@ -98,6 +121,7 @@ class Executor:
             env_processes_list.append(x.env_processes)
             partial_state_updates.append(x.partial_state_updates)
             simulation_execs.append(SimExecutor(x.policy_ops).simulation)
+            time_seq_wrapper.append(time_seq_wrapper_function)
 
             config_idx += 1
 
@@ -105,13 +129,14 @@ class Executor:
 
         if self.exec_context == ExecutionMode.single_proc:
             tensor_field = create_tensor_field(partial_state_updates.pop(), eps.pop())
-            result = self.exec_method(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns)
+            result = self.exec_method(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns, time_seq_wrapper)
             final_result = result, tensor_field
         elif self.exec_context == ExecutionMode.multi_proc:
             # if len(self.configs) > 1:
-            simulations = self.exec_method(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns)
+            simulations = self.exec_method(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns, time_seq_wrapper)
             results = []
-            for result, partial_state_updates, ep in list(zip(simulations, partial_state_updates, eps)):
+            result_iterator = list(zip(simulations, partial_state_updates, eps))
+            for result, partial_state_updates, ep in result_iterator:
                 results.append((flatten(result), create_tensor_field(partial_state_updates, ep)))
 
             final_result = results

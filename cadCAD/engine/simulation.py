@@ -179,13 +179,14 @@ class Executor:
                 configs: List[Tuple[List[Callable], List[Callable]]],
                 env_processes: Dict[str, Callable],
                 time_seq: range,
-                run: int
+                run: int,
+                time_seq_wrapper: Callable
             ) -> List[List[Dict[str, Any]]]:
 
         time_seq: List[int] = [x + 1 for x in time_seq]
         simulation_list: List[List[Dict[str, Any]]] = [states_list]
 
-        for time_step in time_seq:
+        for time_step in time_seq_wrapper[0](time_seq):
             pipe_run: List[Dict[str, Any]] = self.state_update_pipeline(
                 sweep_dict, simulation_list, configs, env_processes, time_step, run
             )
@@ -202,10 +203,11 @@ class Executor:
             configs: List[Tuple[List[Callable], List[Callable]]],
             env_processes: Dict[str, Callable],
             time_seq: range,
-            runs: int
+            runs: int,
+            time_seq_wrapper: List[Callable]
         ) -> List[List[Dict[str, Any]]]:
 
-        def execute_run(sweep_dict, states_list, configs, env_processes, time_seq, run) -> List[Dict[str, Any]]:
+        def execute_run(sweep_dict, states_list, configs, env_processes, time_seq, run, time_seq_wrapper) -> List[Dict[str, Any]]:
             run += 1
 
             def generate_init_sys_metrics(genesis_states_list):
@@ -216,7 +218,7 @@ class Executor:
             states_list_copy: List[Dict[str, Any]] = list(generate_init_sys_metrics(deepcopy(states_list)))
 
             first_timestep_per_run: List[Dict[str, Any]] = self.run_pipeline(
-                sweep_dict, states_list_copy, configs, env_processes, time_seq, run
+                sweep_dict, states_list_copy, configs, env_processes, time_seq, run, time_seq_wrapper
             )
             del states_list_copy
 
@@ -225,7 +227,7 @@ class Executor:
         tp = TPool(runs)
         pipe_run: List[List[Dict[str, Any]]] = flatten(
             tp.map(
-                lambda run: execute_run(sweep_dict, states_list, configs, env_processes, time_seq, run),
+                lambda run: execute_run(sweep_dict, states_list, configs, env_processes, time_seq, run, time_seq_wrapper),
                 list(range(runs))
             )
         )
