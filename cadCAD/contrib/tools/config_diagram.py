@@ -239,7 +239,7 @@ def generate_diagram(config: Configuration):
 
         # Parameters
         psub_params = relations[i].get('params', set())
-        psub_params = {k: params[k] for k in psub_params}
+        psub_params = {k: params.get(k, None) for k in psub_params}
         psub_vars = relations[i].get('state', set())
         psub_vars = {k: initial_state.get(k, None) for k in psub_vars}
         psub_graph.subgraph(generate_params_cluster(psub_params, i))
