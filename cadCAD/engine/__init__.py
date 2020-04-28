@@ -49,7 +49,7 @@ def parallelize_simulations(
     ):
     l = list(zip(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns))
 
-    with PPool(len(configs_structs)) as p:
+    with ThreadPool(len(configs_structs)) as p:
         t1 = time()
         results = p.map(lambda t: t[0](t[1], t[2], t[3], t[4], t[5], t[6]), l)
         t2 = time()
