@@ -7,6 +7,11 @@ from cadCAD.configuration import Configuration, Processor
 from cadCAD.configuration.utils import TensorFieldReport
 from cadCAD.engine.simulation import Executor as SimExecutor
 
+
+from time import time
+from multiprocessing.pool import ThreadPool
+
+
 VarDictType = Dict[str, List[Any]]
 StatesListsType = List[Dict[str, Any]]
 ConfigsType = List[Tuple[List[Callable], List[Callable]]]
@@ -43,8 +48,12 @@ def parallelize_simulations(
         Ns: List[int]
     ):
     l = list(zip(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns))
+
     with PPool(len(configs_structs)) as p:
+        t1 = time()
         results = p.map(lambda t: t[0](t[1], t[2], t[3], t[4], t[5], t[6]), l)
+        t2 = time()
+        print(f"Parallel={t2 - t1:.8f}")
     return results
 
 
@@ -109,11 +118,14 @@ class Executor:
             final_result = result, tensor_field
         elif self.exec_context == ExecutionMode.multi_proc:
             # if len(self.configs) > 1:
+            #t1 = time()
             simulations = self.exec_method(simulation_execs, var_dict_list, states_lists, configs_structs, env_processes_list, Ts, Ns)
             results = []
+            #t2 = time()
+            #print(f"Results={t2 - t1:.8f}")
             for result, partial_state_updates, ep in list(zip(simulations, partial_state_updates, eps)):
                 results.append((flatten(result), create_tensor_field(partial_state_updates, ep)))
-
+                        
             final_result = results
 
         return final_result

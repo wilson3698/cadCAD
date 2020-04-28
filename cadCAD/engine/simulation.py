@@ -1,6 +1,5 @@
 from typing import Any, Callable, Dict, List, Tuple
 from pathos.pools import ThreadPool as TPool
-from copy import deepcopy
 from functools import reduce
 from types import MappingProxyType
 from cadCAD.engine.utils import engine_exception
@@ -108,9 +107,9 @@ class Executor:
                 run: int
             ) -> List[Dict[str, Any]]:
 
-        t1 = time()
+        #t1 = time()
         last_in_obj: Dict[str, Any] = MappingProxyType(sL[-1])
-        t2 = time()
+        #t2 = time()
         #print(f"PSU={t2 - t1:.8f}")
         _input: Dict[str, Any] = self.policy_update_exception(
             self.get_policy_input(sweep_dict, sub_step, sH, last_in_obj, policy_funcs)
@@ -149,9 +148,9 @@ class Executor:
             ) -> List[Dict[str, Any]]:
 
         sub_step = 0
-        t1 = time()
+        #t1 = time()
         states_list_copy: List[Dict[str, Any]] = tuple(simulation_list[-1])
-        t2 = time()
+        #t2 = time()
         #print(f"SUPcopy={t2 - t1:.8f}")
         genesis_states: Dict[str, Any] = states_list_copy[-1]
 
@@ -192,14 +191,14 @@ class Executor:
         simulation_list: List[List[Dict[str, Any]]] = [states_list]
 
         for time_step in time_seq:
-            t1 = time()
+            #t1 = time()
             pipe_run: List[Dict[str, Any]] = self.state_update_pipeline(
                 sweep_dict, simulation_list, configs, env_processes, time_step, run
             )
 
             _, *pipe_run = pipe_run
             simulation_list.append(pipe_run)
-            t2 = time()
+            #t2 = time()
             #print(f"TS={t2 - t1:.8f}")
 
         return simulation_list
@@ -213,7 +212,7 @@ class Executor:
             time_seq: range,
             runs: int
         ) -> List[List[Dict[str, Any]]]:
-
+        t1 = time()
         def execute_run(sweep_dict, states_list, configs, env_processes, time_seq, run) -> List[Dict[str, Any]]:
             run += 1
 
@@ -232,6 +231,7 @@ class Executor:
             return first_timestep_per_run
 
         tp = TPool(runs)
+        
         pipe_run: List[List[Dict[str, Any]]] = flatten(
             tp.map(
                 lambda run: execute_run(sweep_dict, states_list, configs, env_processes, time_seq, run),
@@ -240,4 +240,6 @@ class Executor:
         )
 
         tp.clear()
+        t2 = time()
+        print(f"Run={t2 - t1:.8f}")
         return pipe_run
