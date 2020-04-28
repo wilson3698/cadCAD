@@ -53,7 +53,7 @@ def parallelize_simulations(
         t1 = time()
         results = p.map(lambda t: t[0](t[1], t[2], t[3], t[4], t[5], t[6]), l)
         t2 = time()
-        print(f"Parallel={t2 - t1:.8f}")
+        print("Parallel={:.8f}".format(t2 - t1))
     return results
 
 

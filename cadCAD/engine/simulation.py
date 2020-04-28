@@ -241,5 +241,5 @@ class Executor:
 
         tp.clear()
         t2 = time()
-        print(f"Run={t2 - t1:.8f}")
+        print("Run={:.8f}".format(t2 - t1))
         return pipe_run
